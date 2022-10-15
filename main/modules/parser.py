@@ -1,4 +1,5 @@
 import asyncio
+import anitopy
 from main.modules.api import AnimePahe
 from main.modules.schedule import update_schedule
 from main.modules.utils import status_text
@@ -8,9 +9,28 @@ from main import queue
 from main.inline import button1
 
 def trim_title(title: str):
-    title, ext = title.replace("[SubsPlease]","").strip().split("[",maxsplit=2)
-    _, ext = ext.split("]",maxsplit=2)
-    title = title.strip() + ext
+    
+    try:
+        file_tags = anitopy.parse(title)
+
+        # Check if particular season is mentioned or not
+        if "anime_season" in filetags:
+            title = file_tags["anime_title"] + " S" + file_tags["anime_season"] + " - " + file_tags["episode_number"]
+        else:
+            title = file_tags["anime_title"] + " - " + file_tags["episode_number"]
+        
+        # Check if resolution tag is in title or not
+        if "video_resolution" in filetags:
+            title += " (" + file_tags["video_resolution"] + ")." + file_tags["file_extension"]
+        else:
+            title += "." + file_tags["file_extension"]
+    
+    except:
+        # Use the ordinary way in case any error occurs
+        title, ext = title.replace("[SubsPlease]","").strip().split("[",maxsplit=2)
+        _, ext = ext.split("]",maxsplit=2)
+        title = title.strip() + ext
+    
     return title
 
 def parse():
